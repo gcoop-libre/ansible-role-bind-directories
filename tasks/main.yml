@@ -1,0 +1,6 @@
+---
+- include: tasks/directory.yml
+  vars:
+    bind_directory: "{{ item }}"
+  with_items: "{{ bind_directories }}"
+  when: bind_directories | length > 0

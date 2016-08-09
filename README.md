@@ -1,38 +1,74 @@
-Role Name
-=========
+Bind Directories
+================
 
-A brief description of the role goes here.
+An Ansible Role that bind directories using mount. The main objective of the role is to mount directories located on a data volume on the system directories.
+
+For example if you want to locate MySQL data dir in another volume, and don't want to change the MySQL configuration, you can bind the directories with this role.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+If you want to synchronize the directories content before mounting them, you need to install rsync on the host.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Available variables are listed below, along with default values (see `defaults/main.yml`):
+
+    bind_directories_basedir: ''
+
+If all the directories to mount would be inside the same directory, you can set it with this property. For example, all your directories may be subdirectories of `/data`, so you can set `bind_directories_basedir: /data` (without trailing slash).
+
+Then, the role will concantenate the value to the dir property of every element of the `bind_directories` list.
+
+    bind_directories:
+      - dir: /data/home
+        mount_point: /home
+        owner: root
+        group: root
+        mode: '0755'
+        create: True
+        sync: False
+        mount: True
+
+The list of directories to bind. Every directory has at least the `dir` property and the `mount_point`. You can specify the owner user, the group and the filemode that would be set to the directory on creation.
+
+The last three properties allow you to define if you want to `create` the directory (`dir` property), `sync`hronize the content and, finally, `mount` the directory and persist the mount on /etc/fstab.
+
+After the directories are synchronized, an empty file `.synchronized` will be created inside the directory. If this flag exists, the directory will not be synchronized, even if you set `sync: True` for it.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
     - hosts: servers
+      vars_files:
+        - vars/main.yml
       roles:
-         - { role: username.rolename, x: 42 }
+        - gcoop-libre.bind-directories
+
+*Inside `vars/main.yml`*:
+
+    bind_directories:
+      - dir: /data/home
+        mount_point: /home
+        owner: root
+        group: root
+        mode: '0755'
+        create: True
+        sync: True
+        mount: True
 
 License
 -------
 
-BSD
+GPLv2
 
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+This role was created in 2016 by [gcoop Cooperativa de Software Libre](http://gcoop.coop).
