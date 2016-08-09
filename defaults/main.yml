@@ -1,0 +1,12 @@
+---
+bind_directories_basedir: ''
+bind_directories: []
+  # Available properties
+  # - dir: /data/home
+  #   mount_point: /home
+  #   owner: root
+  #   group: root
+  #   mode: '0755'
+  #   create: True (default)
+  #   sync: False (default)
+  #   mount: True (default)
