@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  remote_user: root
+  roles:
+    - role: gcoop-libre.bind-directories
+      bind_directories:
+        - dir: /data/home
+          mount_point: /home
+          owner: root
+          group: root
+          mode: '0755'
+          create: True
+          sync: True
+          mount: True
