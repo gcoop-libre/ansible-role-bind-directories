@@ -31,12 +31,17 @@ Then, the role will concantenate the value to the `dir` property of every elemen
         create_mount_point: False
         sync: False
         mount: True
+        services:
+          - mysqld
+          - apache2
 
 The list of directories to bind. Every directory has at least the `dir` property and the `mount_point`. You can specify the owner user, the group and the filemode that would be set to the directory on creation.
 
-The last four properties allow you to define if you want to `create` the directory (`dir` property), `create` the `mount_point`, `sync`hronize the content and, finally, `mount` the directory and persist the mount on /etc/fstab.
+The next four properties allow you to define if you want to `create` the directory (`dir` property), `create` the `mount_point`, `sync`hronize the content and, finally, `mount` the directory and persist the mount on /etc/fstab.
 
 After the directories are synchronized, an empty file `.synchronized` will be created inside the directory. If this flag exists, the directory will not be synchronized, even if you set `sync: True` for it.
+
+The last property, `services`, allow the definition of a list a services which will be stopped before binding the directory and restarted after it.
 
 Dependencies
 ------------

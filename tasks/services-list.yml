@@ -1,0 +1,33 @@
+---
+- name: "Services: Generate empty list"
+  set_fact:
+    bind_directories_services: []
+
+- name: "Services: Verify which directories are already binded"
+  command: mountpoint -q {{ item.mount_point }}
+  register: bind_directories_binded_temp
+  ignore_errors: true
+  changed_when: false
+  with_items: "{{ bind_directories }}"
+
+- name: "Services: Define empty bind_directories_binded variable"
+  set_fact:
+    bind_directories_binded: []
+
+- name: "Services: Add binded directories to bind_directories_binded"
+  set_fact:
+    bind_directories_binded: "{{ bind_directories_binded }} + ['{{ item.item.mount_point }}']"
+  when: item.rc == 0
+  with_items: "{{ bind_directories_binded_temp.results }}"
+
+- name: "Services: Add to the list"
+  set_fact:
+    bind_directories_services: "{{ bind_directories_services + bind_directory.services }}"
+  with_items: "{{ bind_directories }}"
+  loop_control:
+    loop_var: bind_directory
+  when: bind_directory.services | default([]) | length > 0 and bind_directory.mount_point not in bind_directories_binded
+
+- name: "Services: Remove duplicates"
+  set_fact:
+    bind_directories_services: "{{ bind_directories_services | unique }}"

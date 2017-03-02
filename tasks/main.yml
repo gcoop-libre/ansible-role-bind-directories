@@ -1,6 +1,25 @@
 ---
+- include: tasks/services-list.yml
+  static: false
+  when: bind_directories | length > 0
+
+- include: tasks/services-stop.yml
+  vars:
+    service: "{{ item }}"
+  static: false
+  with_items: "{{ bind_directories_services }}"
+  when: bind_directories_services | length > 0
+
 - include: tasks/directory.yml
   vars:
     bind_directory: "{{ item }}"
+  static: false
   with_items: "{{ bind_directories }}"
   when: bind_directories | length > 0
+
+- include: tasks/services-start.yml
+  vars:
+    service: "{{ item }}"
+  static: false
+  with_items: "{{ bind_directories_services }}"
+  when: bind_directories_services | length > 0
