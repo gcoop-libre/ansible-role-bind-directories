@@ -10,5 +10,6 @@
           group: root
           mode: '0755'
           create: True
+          create_mount_point: False
           sync: True
           mount: True

@@ -8,5 +8,6 @@ bind_directories: []
   #   group: root
   #   mode: '0755'
   #   create: True (default)
+  #   create_mount_point: False (default)
   #   sync: False (default)
   #   mount: True (default)

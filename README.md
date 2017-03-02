@@ -19,7 +19,7 @@ Available variables are listed below, along with default values (see `defaults/m
 
 If all the directories to mount would be inside the same directory, you can set it with this property. For example, all your directories may be subdirectories of `/data`, so you can set `bind_directories_basedir: /data` (without trailing slash).
 
-Then, the role will concantenate the value to the dir property of every element of the `bind_directories` list.
+Then, the role will concantenate the value to the `dir` property of every element of the `bind_directories` list.
 
     bind_directories:
       - dir: /data/home
@@ -28,12 +28,13 @@ Then, the role will concantenate the value to the dir property of every element 
         group: root
         mode: '0755'
         create: True
+        create_mount_point: False
         sync: False
         mount: True
 
 The list of directories to bind. Every directory has at least the `dir` property and the `mount_point`. You can specify the owner user, the group and the filemode that would be set to the directory on creation.
 
-The last three properties allow you to define if you want to `create` the directory (`dir` property), `sync`hronize the content and, finally, `mount` the directory and persist the mount on /etc/fstab.
+The last four properties allow you to define if you want to `create` the directory (`dir` property), `create` the `mount_point`, `sync`hronize the content and, finally, `mount` the directory and persist the mount on /etc/fstab.
 
 After the directories are synchronized, an empty file `.synchronized` will be created inside the directory. If this flag exists, the directory will not be synchronized, even if you set `sync: True` for it.
 

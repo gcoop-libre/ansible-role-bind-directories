@@ -4,6 +4,20 @@
     path: "{{ bind_directory.mount_point }}"
   register: bind_directory_exists
 
+- name: "Directory {{ bind_directory.mount_point }}: Ensure the existence"
+  file:
+    path: "{{ bind_directory.mount_point }}"
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+  when: not bind_directory_exists.stat.isdir | default(False) and bind_directory.create_mount_point | default(False)
+
+- name: "Directory {{ bind_directory.mount_point }}: Verify the existence"
+  stat:
+    path: "{{ bind_directory.mount_point }}"
+  register: bind_directory_exists
+
 - name: "Directory {{ bind_directory.mount_point }}: Create directory {% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
   file:
     path: "{% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
