@@ -31,3 +31,15 @@
 - name: "Services: Remove duplicates"
   set_fact:
     bind_directories_services: "{{ bind_directories_services | unique }}"
+
+- name: "Services: Verify which is running"
+  command: service {{ item }} status
+  register: bind_directories_services_status
+  with_items: "{{ bind_directories_services }}"
+  ignore_errors: true
+
+- name: "Services: Exclude those which are not running"
+  set_fact:
+    bind_directories_services: "{{ bind_directories_services | difference([item.item]) }}"
+  with_items: "{{ bind_directories_services_status.results }}"
+  when: item.rc != 0
