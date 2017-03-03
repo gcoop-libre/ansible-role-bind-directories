@@ -1,0 +1,5 @@
+---
+- name: "Service {{ service }}: start"
+  service:
+    name: "{{ service }}"
+    state: started

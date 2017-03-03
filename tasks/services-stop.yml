@@ -1,0 +1,5 @@
+---
+- name: "Service {{ service }}: stop"
+  service:
+    name: "{{ service }}"
+    state: stopped

@@ -4,9 +4,27 @@
     path: "{{ bind_directory.mount_point }}"
   register: bind_directory_exists
 
-- name: "Directory {{ bind_directory.mount_point }}: Create directory {% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
+- name: "Directory {{ bind_directory.mount_point }}: Ensure the existence"
   file:
-    path: "{% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
+    path: "{{ bind_directory.mount_point }}"
+    owner: root
+    group: root
+    mode: '0755'
+    state: directory
+  when: not bind_directory_exists.stat.isdir | default(False) and bind_directory.create_mount_point | default(False)
+
+- name: "Directory {{ bind_directory.mount_point }}: Verify the existence"
+  stat:
+    path: "{{ bind_directory.mount_point }}"
+  register: bind_directory_exists
+
+- name: "Directory {{ bind_directory.mount_point }}: Generate directory path"
+  set_fact:
+    bind_directory_path: "{% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
+
+- name: "Directory {{ bind_directory.mount_point }}: Create directory {{ bind_directory_path }}"
+  file:
+    path: "{{ bind_directory_path }}"
     owner: "{{ bind_directory.owner | default(omit) }}"
     group: "{{ bind_directory.group | default(omit) }}"
     mode: "{{ bind_directory.mode | default(omit) }}"
@@ -15,12 +33,12 @@
 
 - name: "Directory {{ bind_directory.mount_point }}: Verify the existence of the previous synchronization flag"
   stat:
-    path: "{% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}/.synchronized"
+    path: "{{ bind_directory_path }}/.synchronized"
   register: previous_sync_exists
   when: bind_directory_exists.stat.isdir | default(False)
 
 - name: "Directory {{ bind_directory.mount_point }}: Synchronize directories"
-  command: bash -c "rsync -ai {{ bind_directory.mount_point }}/ {% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}/ | awk {'print $1'} | grep -vE '..\.\..\.\.\.\.' | wc -l || exit 0"
+  command: bash -c "rsync -ai {{ bind_directory.mount_point }}/ {{ bind_directory_path }}/ | awk {'print $1'} | grep -vE '..\.\..\.\.\.\.' | wc -l || exit 0"
   when: bind_directory_exists.stat.isdir | default(False) and not previous_sync_exists.stat.exists | default(False) and bind_directory.sync | default(False)
   register: rsync_changes
   failed_when: "rsync_changes.stderr"
@@ -28,7 +46,7 @@
 
 - name: "Directory {{ bind_directory.mount_point }}: Create synchronization flag"
   file:
-    path: "{% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}/.synchronized"
+    path: "{{ bind_directory_path }}/.synchronized"
     owner: root
     group: root
     mode: '0400'
@@ -38,7 +56,7 @@
 - name: "Directory {{ bind_directory.mount_point }}: Mount"
   mount:
     name: "{{ bind_directory.mount_point }}"
-    src: "{% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
+    src: "{{ bind_directory_path }}"
     fstype: none
     opts: bind
     state: mounted
