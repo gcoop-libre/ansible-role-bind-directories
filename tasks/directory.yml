@@ -20,7 +20,7 @@
 
 - name: "Directory {{ bind_directory.mount_point }}: Generate directory path"
   set_fact:
-    bind_directory_path: "{% if bind_directories_basedir %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
+    bind_directory_path: "{% if bind_directories_basedir and bind_directory.dir[:1] != '/' %}{{ bind_directories_basedir }}/{% endif %}{{ bind_directory.dir }}"
 
 - name: "Directory {{ bind_directory.mount_point }}: Create directory {{ bind_directory_path }}"
   file:
