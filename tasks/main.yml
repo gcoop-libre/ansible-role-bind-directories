@@ -1,26 +1,22 @@
 ---
-- include: tasks/services-list.yml
-  static: false
+- include_tasks: services-list.yml
   when: bind_directories | length > 0
 
-- include: tasks/services-stop.yml
-  static: false
+- include_tasks: services-stop.yml
   with_items: "{{ bind_directories_services }}"
   loop_control:
     loop_var: service
     label: "{{ service }}"
   when: bind_directories_services | length > 0
 
-- include: tasks/directory.yml
-  static: false
+- include_tasks: directory.yml
   with_items: "{{ bind_directories }}"
   loop_control:
     loop_var: bind_directory
     label: "{{ bind_directory.mount_point }}"
   when: bind_directories | length > 0
 
-- include: tasks/services-start.yml
-  static: false
+- include_tasks: services-start.yml
   with_items: "{{ bind_directories_services }}"
   loop_control:
     loop_var: service
