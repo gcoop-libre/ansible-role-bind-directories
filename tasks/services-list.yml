@@ -4,11 +4,14 @@
     bind_directories_services: []
 
 - name: "Services: Verify which directories are already binded"
-  command: mountpoint -q {{ item.mount_point }}
+  command: mountpoint -q {{ bind_directory.mount_point }}
   register: bind_directories_binded_temp
   ignore_errors: true
   changed_when: false
   with_items: "{{ bind_directories }}"
+  loop_control:
+    loop_var: bind_directory
+    label: "{{ bind_directory.mount_point }}"
 
 - name: "Services: Define empty bind_directories_binded variable"
   set_fact:
@@ -16,9 +19,12 @@
 
 - name: "Services: Add binded directories to bind_directories_binded"
   set_fact:
-    bind_directories_binded: "{{ bind_directories_binded }} + ['{{ item.item.mount_point }}']"
-  when: item.rc == 0
+    bind_directories_binded: "{{ bind_directories_binded }} + ['{{ binded_directory.bind_directory.mount_point }}']"
+  when: binded_directory.rc == 0
   with_items: "{{ bind_directories_binded_temp.results }}"
+  loop_control:
+    loop_var: binded_directory
+    label: "{{ binded_directory.bind_directory.mount_point }}"
 
 - name: "Services: Add to the list"
   set_fact:
@@ -26,6 +32,7 @@
   with_items: "{{ bind_directories }}"
   loop_control:
     loop_var: bind_directory
+    label: "{{ bind_directory.mount_point }}"
   when: bind_directory.services | default([]) | length > 0 and bind_directory.mount_point not in bind_directories_binded
 
 - name: "Services: Remove duplicates"
@@ -33,13 +40,19 @@
     bind_directories_services: "{{ bind_directories_services | unique }}"
 
 - name: "Services: Verify which is running"
-  command: service {{ item }} status
+  command: service {{ service }} status
   register: bind_directories_services_status
   with_items: "{{ bind_directories_services }}"
+  loop_control:
+    loop_var: service
+    label: "{{ service }}"
   ignore_errors: true
 
 - name: "Services: Exclude those which are not running"
   set_fact:
-    bind_directories_services: "{{ bind_directories_services | difference([item.item]) }}"
+    bind_directories_services: "{{ bind_directories_services | difference([service_status.service]) }}"
   with_items: "{{ bind_directories_services_status.results }}"
-  when: item.rc != 0
+  loop_control:
+    loop_var: service_status
+    label: "{{ service_status.service }}"
+  when: service_status.rc != 0
